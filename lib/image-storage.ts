@@ -1,54 +1,38 @@
 import { createHash } from "crypto";
-import { writeFile, readFile, unlink, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
 
 interface ImageData {
   imageId: string;
   hash: string;
-  filePath: string;
+  buffer: Buffer;
   uploadedAt: number;
   previewUrl: string;
 }
 
-// In-memory storage
+// In-memory storage (Vercel-compatible: no filesystem operations)
 const imageStore = new Map<string, ImageData>();
-const TMP_DIR = join(process.cwd(), "tmp");
 const CLEANUP_INTERVAL = 60 * 60 * 1000; // 60 minutes
 const MAX_AGE = 60 * 60 * 1000; // 60 minutes
-
-// Ensure tmp directory exists
-async function ensureTmpDir() {
-  if (!existsSync(TMP_DIR)) {
-    await mkdir(TMP_DIR, { recursive: true });
-  }
-}
 
 // Generate hash from buffer
 export function generateHash(buffer: Buffer): string {
   return createHash("sha256").update(buffer).digest("hex");
 }
 
-// Store image
+// Store image (in-memory only for Vercel compatibility)
 export async function storeImage(
   buffer: Buffer,
   originalName: string
 ): Promise<{ imageId: string; hash: string; previewUrl: string }> {
-  await ensureTmpDir();
-  
   const hash = generateHash(buffer);
   const ext = originalName.split(".").pop()?.toLowerCase() || "jpg";
   const imageId = `${hash}.${ext}`;
-  const filePath = join(TMP_DIR, imageId);
-  
-  await writeFile(filePath, buffer);
   
   const previewUrl = `/api/images/${imageId}`;
   
   const imageData: ImageData = {
     imageId,
     hash,
-    filePath,
+    buffer, // Store buffer directly in memory
     uploadedAt: Date.now(),
     previewUrl,
   };
@@ -63,19 +47,13 @@ export function getImageData(imageId: string): ImageData | undefined {
   return imageStore.get(imageId);
 }
 
-// Get image buffer
+// Get image buffer (from memory)
 export async function getImageBuffer(imageId: string): Promise<Buffer | null> {
   const data = imageStore.get(imageId);
-  if (!data) return null;
-  
-  try {
-    return await readFile(data.filePath);
-  } catch {
-    return null;
-  }
+  return data?.buffer || null;
 }
 
-// Cleanup old images
+// Cleanup old images (memory only)
 async function cleanupOldImages() {
   const now = Date.now();
   const toDelete: string[] = [];
@@ -87,15 +65,7 @@ async function cleanupOldImages() {
   }
   
   for (const imageId of toDelete) {
-    const data = imageStore.get(imageId);
-    if (data) {
-      try {
-        await unlink(data.filePath);
-      } catch {
-        // Ignore errors
-      }
-      imageStore.delete(imageId);
-    }
+    imageStore.delete(imageId);
   }
 }
 
