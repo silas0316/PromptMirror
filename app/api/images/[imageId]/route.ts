@@ -30,7 +30,7 @@ export async function GET(
         ? "image/webp"
         : "image/jpeg";
 
-    return new NextResponse(buffer, {
+    return new Response(buffer, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
