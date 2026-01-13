@@ -1,0 +1,98 @@
+{
+  "style_dna": "cinematic moody lighting, high contrast, desaturated colors with warm undertones, film grain texture, shallow depth of field, dramatic shadows, golden hour ambiance",
+  "prompt_template": "A {subject} in a {scene} setting, featuring {palette} color palette, with {lighting} lighting, shot with {camera} camera settings, conveying a {mood} mood, with {details} details",
+  "variables": [
+    {
+      "key": "subject",
+      "label": "Subject",
+      "type": "text",
+      "suggestedValue": "portrait of a person",
+      "lockedDefault": false,
+      "confidence": 0.95
+    },
+    {
+      "key": "scene",
+      "label": "Scene",
+      "type": "text",
+      "suggestedValue": "urban street at dusk",
+      "lockedDefault": false,
+      "confidence": 0.88
+    },
+    {
+      "key": "palette",
+      "label": "Color Palette",
+      "type": "text",
+      "suggestedValue": "warm desaturated tones with amber and deep blue accents",
+      "lockedDefault": false,
+      "confidence": 0.92
+    },
+    {
+      "key": "lighting",
+      "label": "Lighting",
+      "type": "text",
+      "suggestedValue": "cinematic moody lighting with dramatic shadows and golden hour warmth",
+      "lockedDefault": false,
+      "confidence": 0.90
+    },
+    {
+      "key": "camera",
+      "label": "Camera",
+      "type": "text",
+      "suggestedValue": "85mm lens, f/1.4, shallow depth of field",
+      "lockedDefault": false,
+      "confidence": 0.85
+    },
+    {
+      "key": "mood",
+      "label": "Mood",
+      "type": "text",
+      "suggestedValue": "contemplative and introspective",
+      "lockedDefault": false,
+      "confidence": 0.87
+    },
+    {
+      "key": "details",
+      "label": "Details",
+      "type": "text",
+      "suggestedValue": "film grain texture, subtle vignette, soft focus on background",
+      "lockedDefault": false,
+      "confidence": 0.80
+    },
+    {
+      "key": "style_dna",
+      "label": "Style DNA",
+      "type": "text",
+      "suggestedValue": "cinematic moody lighting, high contrast, desaturated colors with warm undertones, film grain texture, shallow depth of field, dramatic shadows, golden hour ambiance",
+      "lockedDefault": true,
+      "confidence": 1.0
+    }
+  ],
+  "negative_prompt": "oversaturated colors, harsh lighting, digital artifacts, low quality, blurry, distorted, cartoon style, anime style",
+  "recommended_settings": {
+    "aspect_ratio": "4:5",
+    "steps": 50,
+    "guidance": 7.5,
+    "notes": "Recommended for portrait-style images with cinematic feel"
+  },
+  "palette": {
+    "name": "Cinematic Warm Desaturated",
+    "colors": [
+      "#8B6F47",
+      "#5C4A37",
+      "#D4A574",
+      "#2C3E50",
+      "#E8D5B7",
+      "#A67C52"
+    ]
+  },
+  "composition": {
+    "shot_type": "medium close-up",
+    "angle": "eye-level",
+    "focal_length_guess": "85mm",
+    "framing": "rule of thirds, subject slightly off-center"
+  },
+  "warnings": [
+    "Style may rely on model-specific features that cannot be perfectly replicated",
+    "Composition matching is best-effort in MVP version"
+  ]
+}
