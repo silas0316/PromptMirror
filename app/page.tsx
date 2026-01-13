@@ -24,6 +24,7 @@ import {
   Info
 } from "lucide-react"
 import { toast } from "sonner"
+import { mockAnalysis, delay, getMockImageUrl } from "@/lib/demo-data"
 
 export default function Home() {
   const {
@@ -133,6 +134,18 @@ export default function Home() {
 
       if (!response.ok) {
         const error = await response.json()
+        // If API error, use demo mode
+        if (error.error?.includes("quota") || error.error?.includes("429")) {
+          toast.info("Using demo mode - API quota exceeded")
+          setAnalyzing(true, "Building template...")
+          await delay(1000)
+          setAnalyzing(true, "Preparing suggestions...")
+          await delay(500)
+          setAnalysis(mockAnalysis)
+          toast.success("Demo analysis complete! (Mock data)")
+          setAnalyzing(false, "")
+          return
+        }
         throw new Error(error.error || "Analysis failed")
       }
 
@@ -143,7 +156,18 @@ export default function Home() {
       setAnalysis(analysisData)
       toast.success("Analysis complete!")
     } catch (error: any) {
-      toast.error(error.message || "Failed to analyze image")
+      // Fallback to demo mode on any error
+      if (error.message?.includes("quota") || error.message?.includes("429") || !error.message) {
+        toast.info("Using demo mode - API unavailable")
+        setAnalyzing(true, "Building template...")
+        await delay(1000)
+        setAnalyzing(true, "Preparing suggestions...")
+        await delay(500)
+        setAnalysis(mockAnalysis)
+        toast.success("Demo analysis complete! (Mock data)")
+      } else {
+        toast.error(error.message || "Failed to analyze image")
+      }
     } finally {
       setAnalyzing(false, "")
     }
@@ -167,6 +191,37 @@ export default function Home() {
 
       if (!response.ok) {
         const error = await response.json()
+        // If API error, use demo mode - just shuffle some values slightly
+        if (error.error?.includes("quota") || error.error?.includes("429")) {
+          toast.info("Using demo mode - API quota exceeded")
+          await delay(1000)
+          
+          // In demo mode, just update unlocked variables with slight variations
+          const updatedVariables = analysis.variables.map((v) => {
+            if (!variableLocks[v.key] && v.key !== "style_dna") {
+              return {
+                ...v,
+                suggestedValue: v.suggestedValue + " (refined)",
+              }
+            }
+            return v
+          })
+
+          setAnalysis({
+            ...analysis,
+            variables: updatedVariables,
+          })
+
+          updatedVariables.forEach((v) => {
+            if (!variableLocks[v.key]) {
+              setVariableValue(v.key, v.suggestedValue)
+            }
+          })
+
+          toast.success("Demo suggestions refined! (Mock data)")
+          setRefining(false)
+          return
+        }
         throw new Error(error.error || "Refinement failed")
       }
 
@@ -196,7 +251,26 @@ export default function Home() {
 
       toast.success("Suggestions refined!")
     } catch (error: any) {
-      toast.error(error.message || "Failed to refine suggestions")
+      // Fallback to demo mode
+      if (error.message?.includes("quota") || error.message?.includes("429")) {
+        toast.info("Using demo mode - API unavailable")
+        await delay(1000)
+        const updatedVariables = analysis.variables.map((v) => {
+          if (!variableLocks[v.key] && v.key !== "style_dna") {
+            return { ...v, suggestedValue: v.suggestedValue + " (refined)" }
+          }
+          return v
+        })
+        setAnalysis({ ...analysis, variables: updatedVariables })
+        updatedVariables.forEach((v) => {
+          if (!variableLocks[v.key]) {
+            setVariableValue(v.key, v.suggestedValue)
+          }
+        })
+        toast.success("Demo suggestions refined! (Mock data)")
+      } else {
+        toast.error(error.message || "Failed to refine suggestions")
+      }
     } finally {
       setRefining(false)
     }
@@ -225,6 +299,30 @@ export default function Home() {
 
       if (!response.ok) {
         const error = await response.json()
+        // If API error, use demo mode
+        if (error.error?.includes("quota") || error.error?.includes("429")) {
+          toast.info("Using demo mode - API quota exceeded")
+          await delay(2000) // Simulate generation time
+          
+          // Calculate diff summary
+          const diffs: string[] = []
+          analysis.variables.forEach((v) => {
+            if (variableValues[v.key] !== v.suggestedValue) {
+              diffs.push(`${v.label}: changed`)
+            }
+          })
+
+          addGeneratedImage({
+            imageId: `demo-${Date.now()}`,
+            previewUrl: getMockImageUrl(),
+            revisedPrompt: "Demo mode: This is a placeholder image. Real generation requires OpenAI API access.",
+            diffSummary: diffs.join(", ") || "No changes",
+          })
+
+          toast.success("Demo image generated! (Mock data)")
+          setGenerating(false)
+          return
+        }
         throw new Error(error.error || "Generation failed")
       }
 
@@ -247,7 +345,28 @@ export default function Home() {
 
       toast.success("Image generated successfully!")
     } catch (error: any) {
-      toast.error(error.message || "Failed to generate image")
+      // Fallback to demo mode on any error
+      if (error.message?.includes("quota") || error.message?.includes("429") || !error.message) {
+        toast.info("Using demo mode - API unavailable")
+        await delay(2000)
+        
+        const diffs: string[] = []
+        analysis.variables.forEach((v) => {
+          if (variableValues[v.key] !== v.suggestedValue) {
+            diffs.push(`${v.label}: changed`)
+          }
+        })
+
+        addGeneratedImage({
+          imageId: `demo-${Date.now()}`,
+          previewUrl: getMockImageUrl(),
+          revisedPrompt: "Demo mode: This is a placeholder image.",
+          diffSummary: diffs.join(", ") || "No changes",
+        })
+        toast.success("Demo image generated! (Mock data)")
+      } else {
+        toast.error(error.message || "Failed to generate image")
+      }
     } finally {
       setGenerating(false)
     }
