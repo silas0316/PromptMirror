@@ -65,7 +65,7 @@ interface AppState {
   analysisProgress: string;
   
   // Actions
-  setImage: (imageId: string, previewUrl: string) => void;
+  setImage: (imageId: string | null, previewUrl: string | null) => void;
   setAnalysis: (analysis: AppState["analysis"]) => void;
   setVariableValue: (key: string, value: string) => void;
   toggleVariableLock: (key: string) => void;
