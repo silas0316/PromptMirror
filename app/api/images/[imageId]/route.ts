@@ -30,7 +30,13 @@ export async function GET(
         ? "image/webp"
         : "image/jpeg";
 
-    return new NextResponse(buffer, {
+    // Convert Buffer to ArrayBuffer for NextResponse
+    const arrayBuffer = buffer.buffer.slice(
+      buffer.byteOffset,
+      buffer.byteOffset + buffer.byteLength
+    );
+
+    return new NextResponse(arrayBuffer, {
       headers: {
         "Content-Type": contentType,
         "Cache-Control": "public, max-age=3600",
